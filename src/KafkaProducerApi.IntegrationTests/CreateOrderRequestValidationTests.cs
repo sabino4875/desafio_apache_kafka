@@ -1,6 +1,6 @@
 namespace Kafka.Producer.Api.IntegrationTests
 {
-    using Kafka.Common.Dto;
+    using Kafka.Common.Application.Dto;
     using System;
     using System.Collections.Generic;
     using System.ComponentModel.DataAnnotations;

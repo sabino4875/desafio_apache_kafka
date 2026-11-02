@@ -1,7 +1,6 @@
 ﻿namespace Kafka.Producer.Simulator.Application.UseCases
 {
-    using Kafka.Common.Dto;
-    using Kafka.Producer.Simulator.Domain;
+    using Kafka.Common.Application.Dto;
     using Kafka.Producer.Simulator.Interfaces.Services;
     using Serilog;
     using System;
@@ -14,10 +13,10 @@
         public async Task<DispatchPedidoResponse> ExecuteAsync(
             DispatchPedidoRequest request, CancellationToken ct)
         {
-            var pedido = new CreateOrderRequest(request.ClientId, request.ValorTotal, request.Item);
+            var pedido = request;
 
             logger.Information(
-                "Despachando pedido | ClientId: {ClientId} | Product: {Item} | Valor: {Valor}",
+                "Despachando pedido | OrderId:  ClientId: {ClientId} | Product: {Item} | Valor: {Valor}",
                 pedido.ClientId, pedido.Product, pedido.Total);
 
             var (success, detail, error) = await dispatchService.DispatchAsync(pedido, ct);
