@@ -1,5 +1,6 @@
 namespace Kafka.Consumer.Console
 {
+    using Kafka.Common.Contracts;
     using Kafka.Consumer.Console.Configuration;
     using Kafka.Consumer.Console.Contracts;
     using Kafka.Consumer.Console.Handlers;

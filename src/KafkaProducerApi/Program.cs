@@ -1,6 +1,7 @@
 namespace Kafka.Producer.Console
 {
     using Confluent.Kafka;
+    using Kafka.Common.Contracts;
     using Kafka.Producer.Api.Configuration;
     using Kafka.Producer.Api.Contracts;
     using Kafka.Producer.Api.EndPoints;

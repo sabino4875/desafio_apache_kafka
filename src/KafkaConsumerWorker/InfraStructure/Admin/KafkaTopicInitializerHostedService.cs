@@ -1,5 +1,6 @@
 namespace Kafka.Consumer.Console.InfraStructure.Admin
 {
+    using Kafka.Common.Contracts;
     using Kafka.Consumer.Console.Configuration;
     using Microsoft.Extensions.Hosting;
     using Microsoft.Extensions.Options;
