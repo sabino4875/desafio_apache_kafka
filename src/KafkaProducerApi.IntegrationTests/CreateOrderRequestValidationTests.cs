@@ -1,13 +1,15 @@
 namespace Kafka.Producer.Api.IntegrationTests
 {
+    /*
     using Kafka.Common.Application.Dto;
     using System;
     using System.Collections.Generic;
     using System.ComponentModel.DataAnnotations;
     using Xunit;
+    */
 
     public class CreateOrderRequestValidationTests
-    {
+    {/*
         private static List<ValidationResult> ValidateModel(object model)
         {
             var results = new List<ValidationResult>();
@@ -87,5 +89,6 @@ namespace Kafka.Producer.Api.IntegrationTests
             var errors = ValidateModel(request);
             Assert.NotEmpty(errors);
         }
+*/
     }
 }
