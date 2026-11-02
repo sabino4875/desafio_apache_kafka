@@ -1,6 +1,6 @@
 ﻿namespace Kafka.Producer.Simulator.Interfaces.Services
 {
-    using Kafka.Common.Dto;
+    using Kafka.Common.Application.Dto;
     using Kafka.Producer.Simulator.Domain;
     using System.Threading;
     using System.Threading.Tasks;

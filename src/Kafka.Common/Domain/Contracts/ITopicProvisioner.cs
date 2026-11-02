@@ -1,4 +1,4 @@
-﻿namespace Kafka.Common.Contracts
+﻿namespace Kafka.Common.Domain.Contracts
 {
     using System.Threading;
     using System.Threading.Tasks;

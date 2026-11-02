@@ -1,7 +1,11 @@
 namespace Kafka.Producer.Console
 {
     using Confluent.Kafka;
-    using Kafka.Common.Contracts;
+    using Confluent.SchemaRegistry;
+    using FluentValidation;
+    using Kafka.Common.Application.Dto;
+    using Kafka.Common.Domain.Contracts;
+    using Kafka.Producer.Api.Application.Validation;
     using Kafka.Producer.Api.Configuration;
     using Kafka.Producer.Api.Contracts;
     using Kafka.Producer.Api.EndPoints;
@@ -44,6 +48,16 @@ namespace Kafka.Producer.Console
                 builder.Services.AddSingleton<ITopicProvisioner, KafkaTopicProvisioner>();
                 builder.Services.AddHostedService<KafkaTopicInitializerHostedService>();
                 builder.Services.AddSingleton<IOrderProducer, OrderProducer>();
+                builder.Services.AddSingleton<ISchemaRegistryClient>(sp =>
+                {
+                    var config = new SchemaRegistryConfig
+                    {
+                        Url = builder.Configuration.GetConnectionString("SchemaRegistry") ?? "http://localhost:8081"
+                    };
+                    return new CachedSchemaRegistryClient(config);
+                });
+
+                builder.Services.AddScoped<IValidator<CreateOrderRequest>, CreateOrderRequestValidator>();
 
                 builder.Services.AddProblemDetails();
                 builder.Services.AddRequestTimeouts();

@@ -1,7 +1,7 @@
 namespace Kafka.Producer.Api.Infrastructure.Producers
 {
     using Confluent.Kafka;
-    using Kafka.Common.Domain;
+    using Kafka.Common.Application.Events;
     using Kafka.Producer.Api.Configuration;
     using Kafka.Producer.Api.Contracts;
     using Kafka.Producer.Api.Handlers;

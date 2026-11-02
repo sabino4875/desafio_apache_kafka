@@ -1,6 +1,10 @@
 namespace Kafka.Consumer.Console.InfraStructure.Consumers
 {
     using Confluent.Kafka;
+    using Confluent.Kafka.SyncOverAsync;
+    using Confluent.SchemaRegistry;
+    using Confluent.SchemaRegistry.Serdes;
+    using Kafka.Common.Application.Events;
     using Kafka.Consumer.Console.Configuration;
     using Kafka.Consumer.Console.Contracts;
     using Microsoft.Extensions.Options;
@@ -9,9 +13,9 @@ namespace Kafka.Consumer.Console.InfraStructure.Consumers
 
     internal sealed class OrderConsumer : IOrderConsumer
     {
-        private readonly IConsumer<string, string> _kafkaConsumer;
+        private readonly IConsumer<string, OrderCreatedEvent> _kafkaConsumer;
 
-        public OrderConsumer(IOptions<KafkaConsumerOptions> options)
+        public OrderConsumer(IOptions<KafkaConsumerOptions> options, ISchemaRegistryClient schemaRegistry)
         {
             ArgumentNullException.ThrowIfNull(options, nameof(options));
 
@@ -29,7 +33,9 @@ namespace Kafka.Consumer.Console.InfraStructure.Consumers
                 PartitionAssignmentStrategy = PartitionAssignmentStrategy.CooperativeSticky
             };
 
-            _kafkaConsumer = new ConsumerBuilder<string, string>(consumerConfig).Build();
+            _kafkaConsumer = new ConsumerBuilder<string, OrderCreatedEvent>(consumerConfig)
+                .SetValueDeserializer(new AvroDeserializer<OrderCreatedEvent>(schemaRegistry).AsSyncOverAsync())
+                .Build();
         }
 
         public void RegisterTopic(string topic)
@@ -38,12 +44,12 @@ namespace Kafka.Consumer.Console.InfraStructure.Consumers
             _kafkaConsumer.Subscribe(topic);
         }
 
-        public ConsumeResult<string, string> Consume(CancellationToken stoppingToken)
+        public ConsumeResult<string, OrderCreatedEvent> Consume(CancellationToken stoppingToken)
         {
             return _kafkaConsumer.Consume(stoppingToken);
         }
 
-        public void Commit(ConsumeResult<string, string> consumeResult)
+        public void Commit(ConsumeResult<string, OrderCreatedEvent> consumeResult)
         {
             _kafkaConsumer.Commit(consumeResult);
         }

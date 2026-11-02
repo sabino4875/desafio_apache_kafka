@@ -1,6 +1,7 @@
 namespace Kafka.Consumer.Console
 {
-    using Kafka.Common.Contracts;
+    using Confluent.SchemaRegistry;
+    using Kafka.Common.Domain.Contracts;
     using Kafka.Consumer.Console.Configuration;
     using Kafka.Consumer.Console.Contracts;
     using Kafka.Consumer.Console.Handlers;
@@ -35,6 +36,14 @@ namespace Kafka.Consumer.Console
 
                 // Provisionamento/Validação do Tópico no Startup
                 builder.Services.AddSingleton<ITopicProvisioner, KafkaTopicProvisioner>();
+                builder.Services.AddSingleton<ISchemaRegistryClient>(sp =>
+                {
+                    var config = new SchemaRegistryConfig
+                    {
+                        Url = builder.Configuration.GetConnectionString("SchemaRegistry") ?? "http://localhost:8081"
+                    };
+                    return new CachedSchemaRegistryClient(config);
+                });
                 builder.Services.AddHostedService<KafkaTopicInitializerHostedService>();
 
                 // Abstrações e Handlers

@@ -3,10 +3,11 @@
 	<PropertyGroup>
 		<PackageId>Kafka.Common</PackageId>
 		<RootNamespace>Kafka.Common</RootNamespace>
+		<NoWarn>$(NoWarn);CA1812;</NoWarn>
 	</PropertyGroup>
 
 	<ItemGroup>
-	  <Folder Include="Domain\" />
+	  <PackageReference Include="Apache.Avro" Version="1.12.2" />
 	</ItemGroup>
 
 </Project>

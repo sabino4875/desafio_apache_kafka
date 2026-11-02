@@ -1,7 +1,7 @@
 namespace Kafka.Consumer.Console.Handlers
 {
     using Confluent.Kafka;
-    using Kafka.Common.Domain;
+    using Kafka.Common.Application.Events;
     using Kafka.Consumer.Console.Contracts;
     using Serilog;
     using System;

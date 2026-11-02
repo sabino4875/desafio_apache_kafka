@@ -1,6 +1,6 @@
 namespace Kafka.Producer.Api.Contracts
 {
-    using Kafka.Common.Domain;
+    using Kafka.Common.Application.Events;
     using System.Threading;
     using System.Threading.Tasks;
 

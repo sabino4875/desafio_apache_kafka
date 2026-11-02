@@ -1,6 +1,6 @@
 namespace Kafka.Producer.Api.Infrastructure.Admin
 {
-    using Kafka.Common.Contracts;
+    using Kafka.Common.Domain.Contracts;
     using Kafka.Producer.Api.Configuration;
     using Microsoft.Extensions.Hosting;
     using Microsoft.Extensions.Options;
