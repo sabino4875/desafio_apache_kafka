@@ -1,0 +1,23 @@
+﻿<Project Sdk="Aspire.AppHost.Sdk/13.6.1">
+
+	<PropertyGroup>
+		<OutputType>Exe</OutputType>
+		<AspireUseCliBundle>true</AspireUseCliBundle>
+		<UserSecretsId>d185b298-7276-4d8d-8e54-92f2fb7ab1d7</UserSecretsId>
+		<PackageId>Kafka.AppHost</PackageId>
+		<RootNamespace>Kafka.AppHost</RootNamespace>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Aspire.Hosting.Kafka" Version="13.6.4" />
+		<PackageReference Include="Confluent.Kafka" Version="2.16.0" />
+		<PackageReference Include="MessagePack" Version="3.1.12" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <ProjectReference Include="..\KafkaConsumerWorker\KafkaConsumerWorker.csproj" />
+	  <ProjectReference Include="..\KafkaProducerApi\KafkaProducerApi.csproj" />
+	  <ProjectReference Include="..\KafkaSimulator\KafkaSimulator.csproj" />
+	</ItemGroup>
+
+</Project>

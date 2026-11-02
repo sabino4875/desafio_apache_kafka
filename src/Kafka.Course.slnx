@@ -1,0 +1,9 @@
+<Solution>
+  <Project Path="Kafka.AppHost/Kafka.AppHost.csproj" />
+  <Project Path="Kafka.Common/Kafka.Common.csproj" />
+  <Project Path="Kafka.ServiceDefaults/Kafka.ServiceDefaults.csproj" />
+  <Project Path="KafkaConsumerWorker/KafkaConsumerWorker.csproj" />
+  <Project Path="KafkaProducerApi.IntegrationTests/KafkaProducerApi.IntegrationTests.csproj" Id="7c943cc9-c864-4ff5-a3e4-baad6bb5bdd6" />
+  <Project Path="KafkaProducerApi/KafkaProducerApi.csproj" />
+  <Project Path="KafkaSimulator/KafkaSimulator.csproj" Id="4b8617ba-0c13-498b-993c-302b1a115663" />
+</Solution>

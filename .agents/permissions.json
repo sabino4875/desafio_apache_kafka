@@ -1,0 +1,65 @@
+{
+  "$schema": "https://antigravity.google/schemas/permissions-v1.json",
+  "version": "1.0",
+  "project": "Kafka.Course",
+  "permissions": {
+    "filesystem": {
+      "workspace_only": true,
+      "allowed_roots": [],
+      "forbidden_patterns": [
+        "**/*.env",
+        "**/*secret*",
+        "**/*.pem",
+        "**/*.pfx",
+        "**/appsettings.Production.json",
+		"**/config.json"
+      ],
+      "allow_create_files": true,
+      "allow_delete_files": false,
+      "require_confirmation_for_overwrites": true
+    },
+    "terminal": {
+      "allowed_shells": [
+        "pwsh",
+        "powershell"
+      ],
+      "allowed_commands": [
+        "dotnet build",
+        "dotnet test",
+        "dotnet run",
+        "dotnet restore",
+        "dotnet ef",
+        "dotnet list package --vulnerable",
+        "pwsh -NoProfile -ExecutionPolicy ByPass -File ./scripts/*.ps1",
+        "pwsh -NoProfile -ExecutionPolicy ByPass -Command `command`"
+      ],
+      "denied_commands": [
+        "rm -rf *",
+        "drop database *",
+        "git push --force*",
+        "git reset --hard*",
+        "format *",
+        "curl * | bash",
+        "Invoke-Expression",
+        "iex *"
+      ],
+      "working_directory_restriction": "workspace_root"
+    },
+    "network": {
+      "outbound_allowed": true,
+      "restricted_hosts": [
+        "localhost",
+        "127.0.0.1",
+        "generativelanguage.googleapis.com",
+        "api.nuget.org"
+      ]
+    },
+    "security_policies": {
+      "require_sql_parameterization": true,
+      "enforce_project_scope": true,
+      "enforce_clean_architecture_layers": true,
+      "forbid_raw_html_in_ui": true,
+      "forbid_secrets_in_code": true
+    }
+  }
+}

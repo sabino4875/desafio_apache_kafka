@@ -1,0 +1,28 @@
+<Project Sdk="Microsoft.NET.Sdk.Worker">
+
+	<PropertyGroup>
+		<OutputType>Exe</OutputType>
+		<PackageId>Kafka.Consumer.Console</PackageId>
+		<RootNamespace>Kafka.Consumer.Console</RootNamespace>
+		<GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+		<Deterministic>false</Deterministic>
+		<NoWarn>$(NoWarn);CA1031;CA1812;CA1852;</NoWarn>
+		<UserSecretsId>dotnet-Sample-f8459577-7356-47aa-8f2d-7c29940e06cf</UserSecretsId>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Confluent.Kafka" Version="2.16.0" />
+		<PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="10.0.14" />
+		<PackageReference Include="Serilog" Version="4.4.0" />
+		<PackageReference Include="Microsoft.Extensions.Hosting" Version="10.0.14" />
+		<PackageReference Include="Serilog.AspNetCore" Version="10.0.0" />
+		<PackageReference Include="Serilog.Sinks.Console" Version="6.1.1" />
+		<PackageReference Include="Serilog.Sinks.File" Version="7.0.0" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\Kafka.ServiceDefaults\Kafka.ServiceDefaults.csproj" />
+		<ProjectReference Include="..\Kafka.Common\Kafka.Common.csproj" />
+	</ItemGroup>
+
+</Project>

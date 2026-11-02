@@ -1,0 +1,48 @@
+<Project>
+  <!-- Compilation Configurations -->
+  <PropertyGroup>
+    <MaxCpuCount>1</MaxCpuCount>
+    <BuildInParallel>false</BuildInParallel>
+    <NodeReuse>false</NodeReuse>
+  </PropertyGroup>
+  
+    <!-- General Project Configurations -->
+  	<PropertyGroup>
+		<TargetFramework>net10.0</TargetFramework>
+		<ImplicitUsings>disable</ImplicitUsings>
+		<Nullable>disable</Nullable>
+		<PublishRelease>true</PublishRelease>
+		<LangVersion>latest</LangVersion>
+	</PropertyGroup>
+	
+	<!-- Repository Metadata -->
+	<PropertyGroup>
+		<Authors>Sabino R. Silva</Authors>
+		<Company>TechSolution ltda</Company>
+		<Copyright>© TechSolution. Todos os direitos reservados.</Copyright>
+		<!-- <RepositoryType>git</RepositoryType> -->
+		<!-- <RepositoryUrl>https://github.com</RepositoryUrl> -->
+	</PropertyGroup>
+	
+	<!-- Strict Code Quality Configurations -->
+	<PropertyGroup>
+		<AnalysisLevel>latest</AnalysisLevel>
+		<AnalysisMode>All</AnalysisMode>
+		<TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+		<EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+		<GenerateDocumentationFile>false</GenerateDocumentationFile>
+		<DocumentationFile>documentation/documentation.xml</DocumentationFile>
+	</PropertyGroup>
+	
+	<!-- NuGet auditing configurations -->
+	<PropertyGroup>
+		<NuGetAudit>true</NuGetAudit>
+		<!-- Set the minimum severity level to audit (low, moderate, high, critical) -->
+		<NuGetAuditLevel>high</NuGetAuditLevel>
+		<!-- Force the build to fail if a vulnerability matches the audit level -->
+		<!-- NU1901–NU1904 represent NuGet warning codes for different levels of package vulnerabilities. Treating them as errors ensures insecure code never compiles. -->
+		<WarningsAsErrors>$(WarningsAsErrors);NU1901;NU1902;NU1903;NU1904</WarningsAsErrors>
+		<!-- CA2007 - Do not directly await a Task - https://learn.microsoft.com/en-us/dotnet/fundamentals/code-analysis/quality-rules/ca2007 -->
+		<NoWarn>$(NoWarn);CA2007</NoWarn>
+	</PropertyGroup>
+</Project>

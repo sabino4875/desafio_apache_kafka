@@ -1,0 +1,12 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<PackageId>Kafka.Common</PackageId>
+		<RootNamespace>Kafka.Common</RootNamespace>
+	</PropertyGroup>
+
+	<ItemGroup>
+	  <Folder Include="Domain\" />
+	</ItemGroup>
+
+</Project>

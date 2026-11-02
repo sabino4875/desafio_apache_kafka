@@ -1,0 +1,14 @@
+{
+  "$schema": "https://antigravity.google/schemas/settings-v1.json",
+  "project_name": "Kafka.Course",
+  "description": "Curso de Apache Kafka abordando os principais conceitos, dividido em 4 semanas",
+  "language": "pt-BR",
+  "rules": {
+    "root_file": "../GEMINI.md",
+    "enforce_always_on": true
+  },
+  "skills": {
+    "auto_discover": true,
+    "manifest_file": "skills.json"
+  }
+}
