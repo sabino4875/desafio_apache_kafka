@@ -3,7 +3,7 @@ namespace Kafka.Producer.Api.Infrastructure.Admin
     using Confluent.Kafka;
     using Confluent.Kafka.Admin;
     using Kafka.Common.Domain.Contracts;
-    using Kafka.Producer.Api.Configuration;
+    using Kafka.Common.Domain.Configuration;
     using Microsoft.Extensions.Options;
     using Serilog;
     using System;

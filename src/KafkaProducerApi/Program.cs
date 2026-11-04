@@ -6,10 +6,9 @@ namespace Kafka.Producer.Console
     using Kafka.Common.Application.Dto;
     using Kafka.Common.Domain.Contracts;
     using Kafka.Producer.Api.Application.Validation;
-    using Kafka.Producer.Api.Configuration;
+    using Kafka.Common.Domain.Configuration;
     using Kafka.Producer.Api.Contracts;
     using Kafka.Producer.Api.EndPoints;
-    using Kafka.Producer.Api.Handlers;
     using Kafka.Producer.Api.Infrastructure.Admin;
     using Kafka.Producer.Api.Infrastructure.Producers;
     using Kafka.ServiceDefaults;
@@ -37,12 +36,11 @@ namespace Kafka.Producer.Console
             {
                 var builder = WebApplication.CreateBuilder(args);
                 builder.Configuration.SetBasePath(AppDomain.CurrentDomain.BaseDirectory);
-                builder.Configuration.AddJsonFile("config.json", true, true);
+                builder.Configuration.AddJsonFile("config.json", false, true);
                 builder.Configuration.AddEnvironmentVariables();
 
                 builder.AddServiceDefaults();
 
-                builder.Services.AddSingleton<KafkaClientHandler>();
                 builder.Services.Configure<KafkaProducerOptions>(
                     builder.Configuration.GetSection(KafkaProducerOptions.Section));
                 builder.Services.AddSingleton<ITopicProvisioner, KafkaTopicProvisioner>();
