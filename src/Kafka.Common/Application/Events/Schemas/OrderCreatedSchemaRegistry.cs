@@ -5,7 +5,7 @@
         public const string Schema = @"{
           ""type"": ""record"",
           ""name"": ""OrderCreatedEvent"",
-          ""namespace"": ""Com.Empresa.Eventos"",
+          ""namespace"": ""Kafka.Common.Application.Events"",
           ""doc"": ""Evento disparado contendo o pedido e todos os seus respectivos itens."",
           ""fields"": [
             { ""name"": ""OrderId"", ""type"": ""string"" },
@@ -20,6 +20,7 @@
                   ""type"": ""record"",
                   ""name"": ""OrderItem"",
                   ""fields"": [
+                    { ""name"": ""ProductId"", ""type"": ""string"" },
                     { ""name"": ""ProductName"", ""type"": ""string"" },
                     { ""name"": ""Quantity"", ""type"": ""int"" },
                     { ""name"": ""UnitPrice"", ""type"": ""long"", ""doc"": ""Preço unitário em centavos (ex: 10.25 -> 1025)"" },

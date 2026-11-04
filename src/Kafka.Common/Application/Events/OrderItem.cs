@@ -1,11 +1,10 @@
-﻿using Avro;
-using Avro.Specific;
-using Kafka.Common.Application.Events.Schemas;
-using System;
-using System.Text.Json.Serialization;
-
-namespace Kafka.Common.Application.Events
+﻿namespace Kafka.Common.Application.Events
 {
+    using Avro;
+    using Avro.Specific;
+    using Kafka.Common.Application.Events.Schemas;
+    using System;
+    using System.Text.Json.Serialization;
     public class OrderItem : ISpecificRecord
     {
         private const string schemaData = OrderCreatedSchemaRegistry.Schema;

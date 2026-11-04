@@ -8,6 +8,9 @@
 
 	<ItemGroup>
 	  <PackageReference Include="Apache.Avro" Version="1.12.2" />
+	  <PackageReference Include="Confluent.Kafka" Version="2.16.0" />
+		<PackageReference Include="Confluent.SchemaRegistry" Version="2.16.0" />
+		<PackageReference Include="Confluent.SchemaRegistry.Serdes.Avro" Version="2.16.0" />
 	</ItemGroup>
 
 </Project>
