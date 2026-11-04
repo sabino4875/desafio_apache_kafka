@@ -2,7 +2,7 @@ namespace Kafka.Consumer.Console
 {
     using Confluent.SchemaRegistry;
     using Kafka.Common.Domain.Contracts;
-    using Kafka.Consumer.Console.Configuration;
+    using Kafka.Common.Domain.Configuration;
     using Kafka.Consumer.Console.Contracts;
     using Kafka.Consumer.Console.Handlers;
     using Kafka.Consumer.Console.InfraStructure.Admin;
@@ -24,7 +24,7 @@ namespace Kafka.Consumer.Console
             {
                 var builder = Host.CreateApplicationBuilder(args);
                 builder.Configuration.SetBasePath(AppDomain.CurrentDomain.BaseDirectory);
-                builder.Configuration.AddJsonFile("config.json", true, true);
+                builder.Configuration.AddJsonFile("config.json", false, true);
                 builder.Configuration.AddEnvironmentVariables();
 
                 builder.AddServiceDefaults();

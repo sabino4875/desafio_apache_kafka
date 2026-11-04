@@ -1,7 +1,7 @@
 namespace Kafka.Consumer.Console.Workers
 {
     using Confluent.Kafka;
-    using Kafka.Consumer.Console.Configuration;
+    using Kafka.Common.Domain.Configuration;
     using Kafka.Consumer.Console.Contracts;
     using Microsoft.Extensions.Hosting;
     using Microsoft.Extensions.Options;
@@ -38,7 +38,7 @@ namespace Kafka.Consumer.Console.Workers
         {
             await Task.Yield();
 
-            var topic = _options.OrdersTopic;
+            var topic = _options.TopicName;
             _consumer.RegisterTopic(topic);
             _logger.Information("Inscrito no tópico Kafka '{Topic}'. Aguardando eventos...", topic);
 

@@ -1,7 +1,7 @@
 namespace Kafka.Consumer.Console.InfraStructure.Admin
 {
     using Kafka.Common.Domain.Contracts;
-    using Kafka.Consumer.Console.Configuration;
+    using Kafka.Common.Domain.Configuration;
     using Microsoft.Extensions.Hosting;
     using Microsoft.Extensions.Options;
     using Serilog;
@@ -32,7 +32,7 @@ namespace Kafka.Consumer.Console.InfraStructure.Admin
         public async Task StartAsync(CancellationToken cancellationToken)
         {
             _logger.Information("Consumer - Iniciando hosted service de inicializacao e validacao de topicos Kafka...");
-            await _provisioner.EnsureTopicExistsAsync(_options.OrdersTopic, numPartitions: 3, replicationFactor: 1, cancellationToken);
+            await _provisioner.EnsureTopicExistsAsync(_options.TopicName, numPartitions: 3, replicationFactor: 1, cancellationToken);
         }
 
         public Task StopAsync(CancellationToken cancellationToken) => Task.CompletedTask;

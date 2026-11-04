@@ -3,7 +3,7 @@ namespace Kafka.Consumer.Console.InfraStructure.Admin
     using Confluent.Kafka;
     using Confluent.Kafka.Admin;
     using Kafka.Common.Domain.Contracts;
-    using Kafka.Consumer.Console.Configuration;
+    using Kafka.Common.Domain.Configuration;
     using Microsoft.Extensions.Options;
     using Serilog;
     using System;
