@@ -4,8 +4,8 @@ namespace Kafka.Common.Application.Events
     using Avro.Specific;
     using Kafka.Common.Application.Events.Schemas;
     using System;
-    using System.Collections.ObjectModel;
-    using System.Linq;
+    using System.Collections;
+    using System.Collections.Generic;
     using System.Text.Json.Serialization;
 
     public class OrderCreatedEvent : ISpecificRecord
@@ -25,11 +25,10 @@ namespace Kafka.Common.Application.Events
             set => TotalCents = (long)Math.Round(value * 100m);
         }
 
-
         [JsonIgnore]
         public long TotalCents { get; set; }
 
-        public Collection<OrderItem> Items { get; } = [];
+        public IList<OrderItem> Items { get; } = new List<OrderItem>();
 
         public object Get(int fieldPos)
         {
@@ -39,7 +38,7 @@ namespace Kafka.Common.Application.Events
                 1 => this.ClientId,
                 2 => this.TotalCents,
                 3 => this.CreatedAt,
-                4 => this.Items.ToArray(),
+                4 => this.Items,
                 _ => throw new AvroRuntimeException($"Posição inválida {fieldPos} no Get.")
             };
         }
@@ -53,12 +52,18 @@ namespace Kafka.Common.Application.Events
                 case 2: this.TotalCents = (long)fieldValue; break;
                 case 3: this.CreatedAt = (DateTime)fieldValue; break;
                 case 4:
-                    this.Items.Clear();
-                    if (fieldValue is object[] avroArray)
+                    if (!object.ReferenceEquals(this.Items, fieldValue))
                     {
-                        foreach (OrderItem item in avroArray.Cast<OrderItem>())
+                        this.Items.Clear();
+                        if (fieldValue is IEnumerable enumerable)
                         {
-                            this.Items.Add(item);
+                            foreach (var item in enumerable)
+                            {
+                                if (item is OrderItem orderItem)
+                                {
+                                    this.Items.Add(orderItem);
+                                }
+                            }
                         }
                     }
                     break;
