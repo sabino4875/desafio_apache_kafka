@@ -1,18 +1,18 @@
-namespace Kafka.Consumer.Console.Configuration
+namespace Kafka.Common.Domain.Configuration
 {
     using System.ComponentModel.DataAnnotations;
 
-    internal sealed class KafkaConsumerOptions
+    public sealed class KafkaConsumerOptions
     {
         public const string Section = "Kafka";
 
         [Required(ErrorMessage = "O nome do tópico de pedidos é obrigatório.")]
-        public string OrdersTopic { get; set; } = "pedidos-vendas";
+        public string TopicName { get; set; } = "pedidos-vendas";
 
         public ConsumerSettingsOptions ConsumerSettings { get; set; } = new();
     }
 
-    internal sealed class ConsumerSettingsOptions
+    public sealed class ConsumerSettingsOptions
     {
         public string BootstrapServers { get; set; } = "localhost:9092";
         public string GroupId { get; set; } = "pedido-vendas-consumer";

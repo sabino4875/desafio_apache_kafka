@@ -1,10 +1,12 @@
 namespace Kafka.Consumer.Console.Handlers
 {
     using Confluent.Kafka;
-    using Kafka.Common.Domain;
+    using Kafka.Common.Application.Events;
     using Kafka.Consumer.Console.Contracts;
     using Serilog;
     using System;
+    using System.Globalization;
+    using System.Linq;
     using System.Text.Json;
     using System.Text.RegularExpressions;
     using System.Threading;
@@ -12,10 +14,10 @@ namespace Kafka.Consumer.Console.Handlers
 
     internal sealed partial class OrderEventHandler : IOrderEventHandler
     {
-        private static readonly JsonSerializerOptions JsonOptions = new()
-        {
-            PropertyNameCaseInsensitive = true
-        };
+        //private static readonly JsonSerializerOptions JsonOptions = new()
+        //{
+        //    PropertyNameCaseInsensitive = true
+        //};
 
         private readonly ILogger _logger;
 
@@ -25,7 +27,7 @@ namespace Kafka.Consumer.Console.Handlers
             _logger = logger;
         }
 
-        public Task<bool> HandleAsync(ConsumeResult<string, string> consumeResult, CancellationToken cancellationToken)
+        public Task<bool> HandleAsync(ConsumeResult<string, OrderCreatedEvent> consumeResult, CancellationToken cancellationToken)
         {
             ArgumentNullException.ThrowIfNull(consumeResult, nameof(consumeResult));
 
@@ -33,7 +35,7 @@ namespace Kafka.Consumer.Console.Handlers
 
             try
             {
-                var orderEvent = JsonSerializer.Deserialize<OrderCreatedEvent>(rawValue, JsonOptions);
+                var orderEvent = rawValue;// JsonSerializer.Deserialize<OrderCreatedEvent>(rawValue, JsonOptions);
 
                 if (orderEvent is null)
                 {
@@ -45,16 +47,22 @@ namespace Kafka.Consumer.Console.Handlers
                 }
 
                 // Sanitização defensiva dos campos de texto para evitar Log Injection (CRLF / control chars)
-                var safeClientId = SanitizeForLog(orderEvent.ClientId);
-                var safeProduct = SanitizeForLog(orderEvent.Product);
                 var safeOrderId = SanitizeForLog(orderEvent.OrderId);
-
+                var safeClientId = SanitizeForLog(orderEvent.ClientId);
+                var total = orderEvent.Total;
+                var safeProducts = orderEvent.Items.Select(e => string.Concat(
+                        "Id: ",SanitizeForLog(e.ProductId), "Name: ",SanitizeForLog(e.ProductName), "Quantity: ",e.Quantity, 
+                        "Price: ", e.UnitPrice, "Total:", e.ItemTotal
+                    )
+                );
+                
                 _logger.Information(
-                    "[PEDIDO PROCESSADO] OrderId: {OrderId} | Cliente: {ClientId} | Produto: {Product} | Valor: {Total} | Partition: {Partition} | Offset: {Offset}",
+                    "[PEDIDO PROCESSADO] OrderId: {OrderId} | Cliente: {ClientId} | Produtos: {Product} | Valor: {Total} | Created: {CreatedAt} | Partition: {Partition} | Offset: {Offset}",
                     safeOrderId,
                     safeClientId,
-                    safeProduct,
+                    string.Join(" - ", safeProducts),
                     orderEvent.Total,
+                    orderEvent.CreatedAt.ToString("dd/MM/yyyy HH:mm:ss", CultureInfo.InvariantCulture),
                     consumeResult.Partition.Value,
                     consumeResult.Offset.Value);
 
@@ -63,13 +71,13 @@ namespace Kafka.Consumer.Console.Handlers
             catch (JsonException jsonEx)
             {
                 // Tratamento resiliente de Poison Pill: loga erro estruturado sem derrubar o worker
-                var safePreview = SanitizeForLog(rawValue?.Length > 100 ? string.Concat(rawValue.AsSpan(0, 100), "...") : rawValue);
+                //var safePreview = SanitizeForLog(rawValue?.Length > 100 ? string.Concat(rawValue.AsSpan(0, 100), "...") : rawValue);
                 _logger.Error(
                     jsonEx,
                     "[POISON MESSAGE] Falha ao desserializar evento JSON. Partition: {Partition} | Offset: {Offset} | Payload: {Payload}",
                     consumeResult.Partition.Value,
                     consumeResult.Offset.Value,
-                    safePreview);
+                    rawValue);
 
                 return Task.FromResult(false);
             }

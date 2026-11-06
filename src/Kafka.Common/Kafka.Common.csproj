@@ -3,10 +3,14 @@
 	<PropertyGroup>
 		<PackageId>Kafka.Common</PackageId>
 		<RootNamespace>Kafka.Common</RootNamespace>
+		<NoWarn>$(NoWarn);CA1812;</NoWarn>
 	</PropertyGroup>
 
 	<ItemGroup>
-	  <Folder Include="Domain\" />
+	  <PackageReference Include="Apache.Avro" Version="1.12.2" />
+	  <PackageReference Include="Confluent.Kafka" Version="2.16.0" />
+		<PackageReference Include="Confluent.SchemaRegistry" Version="2.16.0" />
+		<PackageReference Include="Confluent.SchemaRegistry.Serdes.Avro" Version="2.16.0" />
 	</ItemGroup>
 
 </Project>

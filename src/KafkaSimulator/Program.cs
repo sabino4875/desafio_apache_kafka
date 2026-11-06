@@ -11,6 +11,7 @@ namespace Kafka.Producer.Simulator
     using Microsoft.Extensions.Http.Resilience;
     using Serilog;
     using Serilog.Events;
+    using Serilog.Formatting.Compact;
     using System;
     using System.Globalization;
     using System.Threading.Tasks;
@@ -35,7 +36,16 @@ namespace Kafka.Producer.Simulator
                         config.AddJsonFile("config.json", optional: false, reloadOnChange: true);
                         config.AddEnvironmentVariables();
                     })
-                    .UseSerilog((ctx, cfg) => cfg.ReadFrom.Configuration(ctx.Configuration))
+                    .UseSerilog((ctx, cfg) => cfg.ReadFrom.Configuration(ctx.Configuration)
+                    .WriteTo.Console(formatProvider: CultureInfo.CurrentCulture)
+                    .WriteTo.File(
+                        formatter: new CompactJsonFormatter(),
+                        path: "./logs/log-.txt",
+                        rollingInterval: RollingInterval.Day,
+                        rollOnFileSizeLimit: true,
+                        retainedFileCountLimit: 10,
+                        encoding: System.Text.Encoding.UTF8)
+                    )
                     .ConfigureServices((ctx, services) =>
                     {
                         // Options com validação na inicialização (DIP via abstração)

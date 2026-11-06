@@ -1,6 +1,6 @@
 namespace Kafka.Producer.Simulator.Infrastructure.Http
 {
-    using Kafka.Common.Dto;
+    using Kafka.Common.Application.Dto;
     using Kafka.Producer.Simulator.Domain;
     using Kafka.Producer.Simulator.Infrastructure.Configuration;
     using Kafka.Producer.Simulator.Interfaces.Services;

@@ -1,28 +1,48 @@
 ﻿namespace Kafka.Producer.Simulator.Infrastructure.Factories
 {
+    using Kafka.Common.Application.Dto;
     using Kafka.Producer.Simulator.Application.UseCases;
     using System;
     using System.Collections.Generic;
+    using System.Collections.ObjectModel;
     using System.Linq;
     using System.Security.Cryptography;
-    using System.Text;
-    using System.Text.Unicode;
 
     internal static class PedidoFactory
     {
-        private static readonly int Qtde = RandomNumberGenerator.GetInt32(10, 20);
-
-        private static readonly string[] Clientes = [.. Enumerable.Range(0, Qtde).Select(_ => GerarChaveAleatoria())];
-        private static readonly string[] Itens = [.. Enumerable.Range(0, Qtde).Select(_ => GerarEquipamentoAleatorio())];
-
-        private static readonly decimal[] Prices = [.. Enumerable.Range(0, Qtde).Select(_ => GerarValorMonetarioSeguro())];
-
         public static DispatchPedidoRequest CreateRandom()
         {
+            var orderId = Guid.NewGuid().ToString("N").Replace("-", "", StringComparison.InvariantCulture);
+            var clientId = GerarChaveAleatoria();
+            var items = new Collection<OrderItemDto>();
+            var itemRange = RandomNumberGenerator.GetInt32(1, 5);
+            var total = decimal.Zero;
+            while(items.Count < itemRange)
+            {
+                var description = GerarEquipamentoAleatorio();
+                
+                if(!items.Any(e => string.Equals(e.ProductName.ToUpperInvariant(), description.ToUpperInvariant(), StringComparison.OrdinalIgnoreCase)))
+                {
+                    var id = Guid.NewGuid().ToString("N").Replace("-", "", StringComparison.InvariantCulture);
+                    var qty = RandomNumberGenerator.GetInt32(1, 10);
+                    var price = GerarValorMonetarioSeguro();
+                    var itemTotal = price * (decimal)qty;
+                    var item = new OrderItemDto(ProductId: id,
+                                                ProductName: description,
+                                                Quantity: qty,
+                                                UnitPrice: price,
+                                                ItemTotal: itemTotal);
+                    items.Add(item);
+                    total += itemTotal;
+                }
+            }
             return new DispatchPedidoRequest(
-                ClientId: Clientes[RandomNumberGenerator.GetInt32(Clientes.Length)],
-                ValorTotal: Prices[RandomNumberGenerator.GetInt32(Prices.Length)],
-                Item: Itens[RandomNumberGenerator.GetInt32(Itens.Length)]);
+                OrderId: orderId,
+                ClientId: clientId,
+                Total: total,
+                CreatedAt: DateTime.UtcNow,
+                Items: items
+            );
         }
 
         private static decimal GerarValorMonetarioSeguro()

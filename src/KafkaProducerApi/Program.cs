@@ -1,10 +1,14 @@
 namespace Kafka.Producer.Console
 {
     using Confluent.Kafka;
-    using Kafka.Producer.Api.Configuration;
+    using Confluent.SchemaRegistry;
+    using FluentValidation;
+    using Kafka.Common.Application.Dto;
+    using Kafka.Common.Domain.Contracts;
+    using Kafka.Producer.Api.Application.Validation;
+    using Kafka.Common.Domain.Configuration;
     using Kafka.Producer.Api.Contracts;
     using Kafka.Producer.Api.EndPoints;
-    using Kafka.Producer.Api.Handlers;
     using Kafka.Producer.Api.Infrastructure.Admin;
     using Kafka.Producer.Api.Infrastructure.Producers;
     using Kafka.ServiceDefaults;
@@ -32,17 +36,26 @@ namespace Kafka.Producer.Console
             {
                 var builder = WebApplication.CreateBuilder(args);
                 builder.Configuration.SetBasePath(AppDomain.CurrentDomain.BaseDirectory);
-                builder.Configuration.AddJsonFile("config.json", true, true);
+                builder.Configuration.AddJsonFile("config.json", false, true);
                 builder.Configuration.AddEnvironmentVariables();
 
                 builder.AddServiceDefaults();
 
-                builder.Services.AddSingleton<KafkaClientHandler>();
                 builder.Services.Configure<KafkaProducerOptions>(
                     builder.Configuration.GetSection(KafkaProducerOptions.Section));
                 builder.Services.AddSingleton<ITopicProvisioner, KafkaTopicProvisioner>();
                 builder.Services.AddHostedService<KafkaTopicInitializerHostedService>();
                 builder.Services.AddSingleton<IOrderProducer, OrderProducer>();
+                builder.Services.AddSingleton<ISchemaRegistryClient>(sp =>
+                {
+                    var config = new SchemaRegistryConfig
+                    {
+                        Url = builder.Configuration.GetConnectionString("SchemaRegistry") ?? "http://localhost:8081"
+                    };
+                    return new CachedSchemaRegistryClient(config);
+                });
+
+                builder.Services.AddScoped<IValidator<CreateOrderRequest>, CreateOrderRequestValidator>();
 
                 builder.Services.AddProblemDetails();
                 builder.Services.AddRequestTimeouts();

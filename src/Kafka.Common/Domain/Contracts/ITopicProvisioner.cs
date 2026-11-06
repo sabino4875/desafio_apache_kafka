@@ -1,9 +1,8 @@
-namespace Kafka.Consumer.Console.InfraStructure.Admin
+﻿namespace Kafka.Common.Domain.Contracts
 {
     using System.Threading;
     using System.Threading.Tasks;
-
-    internal interface ITopicProvisioner
+    public interface ITopicProvisioner
     {
         Task EnsureTopicExistsAsync(string topicName, int numPartitions = 3, short replicationFactor = 1, CancellationToken cancellationToken = default);
     }

@@ -1,61 +1,40 @@
 namespace Kafka.Producer.Api.Infrastructure.Producers
 {
     using Confluent.Kafka;
-    using Kafka.Common.Domain;
-    using Kafka.Producer.Api.Configuration;
+    using Confluent.SchemaRegistry;
+    using Kafka.Common.Application.Events;
+    using Kafka.Common.Domain.Configuration;
+    using Kafka.Common.InfraStructure.ProducerConsumer;
     using Kafka.Producer.Api.Contracts;
-    using Kafka.Producer.Api.Handlers;
     using Microsoft.Extensions.Options;
     using System;
-    using System.Text.Json;
     using System.Threading;
     using System.Threading.Tasks;
 
-    internal sealed class OrderProducer : IOrderProducer
+    internal sealed class OrderProducer : BaseProducer<string, OrderCreatedEvent, OrderPublishResult>, IOrderProducer
     {
-        private readonly IProducer<string, string> _topicProducer;
-        private readonly KafkaProducerOptions _options;
-
-        public OrderProducer(KafkaClientHandler handle, IOptions<KafkaProducerOptions> options)
+        public OrderProducer(IOptions<KafkaProducerOptions> options, ISchemaRegistryClient schemaRegistryClient)
+            : base(options, schemaRegistryClient)
         {
-            ArgumentNullException.ThrowIfNull(handle, nameof(handle));
-            ArgumentNullException.ThrowIfNull(options, nameof(options));
-
-            _topicProducer = new DependentProducerBuilder<string, string>(handle.Handle).Build();
-            _options = options.Value;
         }
 
-        public async Task<OrderPublishResult> PublishOrderAsync(OrderCreatedEvent orderEvent, CancellationToken cancellationToken = default)
+        public Task<OrderPublishResult> PublishOrderAsync(OrderCreatedEvent orderEvent, CancellationToken cancellationToken = default)
         {
             ArgumentNullException.ThrowIfNull(orderEvent, nameof(orderEvent));
+            return PublishOrderAsync(orderEvent.ClientId, orderEvent, cancellationToken);
+        }
 
-            var topic = _options.OrdersTopic;
-            var payload = JsonSerializer.Serialize(orderEvent);
-
-            var message = new Message<string, string>
-            {
-                Key = orderEvent.ClientId,
-                Value = payload
-            };
-
-            var result = await _topicProducer.ProduceAsync(topic, message, cancellationToken);
+        protected override OrderPublishResult OperationResult(DeliveryResult<string, OrderCreatedEvent> topicEvent)
+        {
+            ArgumentNullException.ThrowIfNull(topicEvent, nameof(topicEvent));
 
             return new OrderPublishResult(
                 Success: true,
-                Topic: result.Topic,
-                Partition: result.Partition.Value,
-                Offset: result.Offset.Value,
+                Topic: topicEvent.Topic,
+                Partition: topicEvent.Partition.Value,
+                Offset: topicEvent.Offset.Value,
                 Message: "Pedido publicado no Kafka com sucesso!"
             );
         }
-
-        public Task<DeliveryResult<string, string>> ProduceAsync(string topic, Message<string, string> message)
-            => _topicProducer.ProduceAsync(topic, message);
-
-        public void Produce(string topic, Message<string, string> message, Action<DeliveryReport<string, string>> deliveryHandler = null)
-            => _topicProducer.Produce(topic, message, deliveryHandler);
-
-        public void Flush(TimeSpan timeout)
-            => _topicProducer.Flush(timeout);
     }
 }
