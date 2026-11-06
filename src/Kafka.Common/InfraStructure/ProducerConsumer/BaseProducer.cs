@@ -35,8 +35,14 @@
                 Acks = Acks.All
             };
 
+            var avroSerializerConfig = new AvroSerializerConfig
+            {
+                AutoRegisterSchemas = true,
+                SubjectNameStrategy = SubjectNameStrategy.Topic
+            };
+
             _topicProducer = new ProducerBuilder<TKey, TEvent>(config)
-                .SetValueSerializer(new AvroSerializer<TEvent>(schemaRegistryClient))
+                .SetValueSerializer(new AvroSerializer<TEvent>(schemaRegistryClient, avroSerializerConfig))
                 .Build();
 
             _options = options.Value;

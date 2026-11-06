@@ -26,10 +26,11 @@ var schemaRegistry = builder.AddContainer("schema-registry", "confluentinc/cp-sc
     .WithEnvironment("SCHEMA_REGISTRY_HOST_NAME", "schema-registry")
     .WithEnvironment("SCHEMA_REGISTRY_KAFKASTORE_BOOTSTRAP_SERVERS", "PLAINTEXT://kafka:29092")
     .WithEnvironment("SCHEMA_REGISTRY_LISTENERS", "http://0.0.0.0:8081")
+    .WithEnvironment("SCHEMA_REGISTRY_KAFKASTORE_TOPIC_REPLICATION_FACTOR", "1")
     .WithEndpoint(port: 8081, targetPort: 8081, name: "http")
     .WaitFor(kafka); // Garante que o Kafka sobe antes do Schema Registry
 
-// 3. Adiciona o Kafka UI (Provectus) para gerenciar tópicos, mensagens e esquemas visualmente
+// 3. Adiciona o Kafka UI (Provectus) para gerenciar tÃ³picos, mensagens e esquemas visualmente
 builder.AddContainer("kafka-ui", "provectuslabs/kafka-ui", "latest")
     .WithEnvironment("KAFKA_CLUSTERS_0_NAME", "local-kraft-cluster")
     .WithEnvironment("KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS", "kafka:29092")
@@ -67,3 +68,5 @@ builder.AddProject<Projects.KafkaSimulator>("simulator")
     .WaitFor(consumerWorker);
 
 builder.Build().Run();
+
+
