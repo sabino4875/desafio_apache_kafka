@@ -1,6 +1,7 @@
 <Solution>
   <Project Path="Kafka.AppHost/Kafka.AppHost.csproj" />
   <Project Path="Kafka.Common/Kafka.Common.csproj" />
+  <Project Path="Kafka.Database.Migrations/Kafka.Database.Migrations.csproj" Id="5baa205b-44bb-4e0a-b997-0e0f4e5f1136" />
   <Project Path="Kafka.ServiceDefaults/Kafka.ServiceDefaults.csproj" />
   <Project Path="KafkaConsumerWorker/KafkaConsumerWorker.csproj" />
   <Project Path="KafkaProducerApi.IntegrationTests/KafkaProducerApi.IntegrationTests.csproj" Id="7c943cc9-c864-4ff5-a3e4-baad6bb5bdd6" />

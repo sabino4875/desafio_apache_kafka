@@ -30,7 +30,7 @@ var schemaRegistry = builder.AddContainer("schema-registry", "confluentinc/cp-sc
     .WithEndpoint(port: 8081, targetPort: 8081, name: "http")
     .WaitFor(kafka); // Garante que o Kafka sobe antes do Schema Registry
 
-// 3. Adiciona o Kafka UI (Provectus) para gerenciar tÃ³picos, mensagens e esquemas visualmente
+// 3. Adiciona o Kafka UI (Provectus) para gerenciar tópicos, mensagens e esquemas visualmente
 builder.AddContainer("kafka-ui", "provectuslabs/kafka-ui", "latest")
     .WithEnvironment("KAFKA_CLUSTERS_0_NAME", "local-kraft-cluster")
     .WithEnvironment("KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS", "kafka:29092")
@@ -39,7 +39,16 @@ builder.AddContainer("kafka-ui", "provectuslabs/kafka-ui", "latest")
     .WaitFor(kafka)
     .WaitFor(schemaRegistry);
 
+// 4. Adiciona o PostgreSQL para persistência e Outbox Pattern com suporte a CDC (wal_level=logical)
+var postgres = builder.AddPostgres("postgres")
+    .WithImage("postgres", "16-alpine")
+    .WithArgs("-c", "wal_level=logical")
+    .WithEndpoint(port: 5432, targetPort: 5432, name: "tcp");
+
+var ordersDb = postgres.AddDatabase("ordersdb");
+
 var producerApi = builder.AddProject<Projects.KafkaProducerApi>("producer-api")
+    .WithReference(ordersDb)
     .WithEnvironment("Kafka__ProducerSettings__BootstrapServers", "localhost:9092")
         .WithEnvironment(context =>
         {
@@ -50,7 +59,8 @@ var producerApi = builder.AddProject<Projects.KafkaProducerApi>("producer-api")
         //.WithReference(kafka)
         //.WithReference(name: schemaRegistry.Resource.Name)//, uri: new Uri(schemaRegistry.GetEndpoint("schema-registry").Url)
         .WaitFor(kafka)
-        .WaitFor(schemaRegistry);
+        .WaitFor(schemaRegistry)
+        .WaitFor(ordersDb);
 
 var consumerWorker = builder.AddProject<Projects.KafkaConsumerWorker>("consumer-worker")
         .WithEnvironment("Kafka__ConsumerSettings__BootstrapServers", "localhost:9092")
