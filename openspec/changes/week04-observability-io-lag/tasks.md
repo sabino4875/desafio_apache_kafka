@@ -17,5 +17,5 @@
 
 ## 4. Integração, Verificação e Testes
 
-- [ ] 4.1 Adicionar/ajustar testes em `KafkaProducerApi.IntegrationTests` para validar a emissão de métricas e cabeçalhos de rastreamento sob execução em container; verificar aprovação dos testes (`dotnet test`).
-- [ ] 4.2 Executar validação manual da solução com Aspire e simulador de carga, confirmando a visualização gráfica das métricas de I/O e Consumer Lag no Aspire Dashboard.
+- [x] 4.1 Adicionar/ajustar testes em `KafkaProducerApi.IntegrationTests` para validar a emissão de métricas e cabeçalhos de rastreamento sob execução em container; verificar aprovação dos testes (`dotnet test`).
+- [x] 4.2 Executar validação manual da solução com Aspire e simulador de carga, confirmando a visualização gráfica das métricas de I/O e Consumer Lag no Aspire Dashboard.
