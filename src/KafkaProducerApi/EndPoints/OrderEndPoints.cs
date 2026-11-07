@@ -2,15 +2,17 @@ namespace Kafka.Producer.Api.EndPoints
 {
     using FluentValidation;
     using Kafka.Common.Application.Dto;
-    using Kafka.Common.Application.Events;
     using Kafka.Producer.Api.Contracts;
+    using Kafka.Producer.Api.Domain.Entities;
     using Kafka.Producer.Api.Filters;
     using Microsoft.AspNetCore.Builder;
     using Microsoft.AspNetCore.Http;
     using Microsoft.AspNetCore.Mvc;
-    using System.Threading;
-    using Kafka.Common.Application.Profiles;
+    using System;
+    using System.Collections.Generic;
     using System.Linq;
+    using System.Text.Json;
+    using System.Threading;
 
     internal static class OrderEndPoints
     {
@@ -18,45 +20,67 @@ namespace Kafka.Producer.Api.EndPoints
         {
             app.MapPost("/api/pedidos", async (
                 [FromBody] CreateOrderRequest request,
-                [FromServices] IOrderProducer producer,
+                [FromServices] IOrderRepository orderRepository,
                 [FromServices] IValidator<CreateOrderRequest> validator,
                 CancellationToken cancellationToken) =>
             {
                 var validationResult = await validator.ValidateAsync(request, cancellationToken);
 
-                if(validationResult.IsValid)
+                if (validationResult.IsValid)
                 {
-                    var orderEvent = new OrderCreatedEvent {
-                        OrderId = request.OrderId,
+                    var order = new OrderEntity
+                    {
+                        Id = request.OrderId,
                         ClientId = request.ClientId,
                         Total = request.Total,
-                        CreatedAt = request.CreatedAt,
+                        CreatedAt = request.CreatedAt
                     };
 
-                    orderEvent.Items.Clear();
-
+                    var items = new List<OrderItemEntity>();
                     foreach (var item in request.Items)
                     {
-                        orderEvent.Items.Add(item.ToEventItem());
+                        items.Add(new OrderItemEntity
+                        {
+                            Id = Guid.NewGuid().ToString("D"),
+                            OrderId = request.OrderId,
+                            ProductId = item.ProductId,
+                            ProductName = item.ProductName,
+                            Quantity = item.Quantity,
+                            UnitPrice = item.UnitPrice,
+                            ItemTotal = item.ItemTotal
+                        });
                     }
 
+                    var outboxPayload = JsonSerializer.Serialize(request);
 
-                    var result = await producer.PublishOrderAsync(orderEvent, cancellationToken);
+                    var outbox = new OutboxMessageEntity
+                    {
+                        Id = Guid.NewGuid(),
+                        AggregateType = "Order",
+                        AggregateId = request.OrderId,
+                        Type = "OrderCreated",
+                        Payload = outboxPayload,
+                        CreatedAt = DateTime.UtcNow,
+                        ProcessedAt = null
+                    };
+
+                    await orderRepository.CreateOrderWithOutboxAsync(order, items, outbox, cancellationToken);
 
                     return Results.Ok(new
                     {
-                        result.Message,
-                        result.Partition,
-                        result.Offset,
-                        orderEvent.OrderId
+                        Message = "Pedido e mensagem outbox persistidos com sucesso.",
+                        order.Id,
+                        OutboxId = outbox.Id,
+                        Status = "PersistedWithOutbox"
                     });
                 }
+
                 var mappingErrors = validationResult.Errors
-                                   .GroupBy(e => e.PropertyName)
-                                   .ToDictionary(
-                                       grupo => grupo.Key,
-                                       grupo => grupo.Select(e => e.ErrorMessage).ToArray()
-                                   );
+                    .GroupBy(e => e.PropertyName)
+                    .ToDictionary(
+                        grupo => grupo.Key,
+                        grupo => grupo.Select(e => e.ErrorMessage).ToArray()
+                    );
 
                 return Results.ValidationProblem(
                     statusCode: StatusCodes.Status422UnprocessableEntity,
@@ -64,7 +88,6 @@ namespace Kafka.Producer.Api.EndPoints
                     detail: "Um ou mais campos enviados não atendem às regras de validação.",
                     title: "Falha na validação do pedido"
                 );
-
             })
             .AddEndpointFilter<ValidationFilter<CreateOrderRequest>>()
             .RequireRateLimiting("OrdersRatePolicy");

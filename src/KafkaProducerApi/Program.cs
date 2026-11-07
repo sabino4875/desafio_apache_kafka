@@ -9,8 +9,11 @@ namespace Kafka.Producer.Console
     using Kafka.Common.Domain.Configuration;
     using Kafka.Producer.Api.Contracts;
     using Kafka.Producer.Api.EndPoints;
+    using Kafka.Database.Migrations;
     using Kafka.Producer.Api.Infrastructure.Admin;
+    using Kafka.Producer.Api.Infrastructure.Database;
     using Kafka.Producer.Api.Infrastructure.Producers;
+    using Kafka.Producer.Api.Infrastructure.Repositories;
     using Kafka.ServiceDefaults;
     using Microsoft.AspNetCore.Builder;
     using Microsoft.AspNetCore.Hosting;
@@ -46,6 +49,14 @@ namespace Kafka.Producer.Console
                 builder.Services.AddSingleton<ITopicProvisioner, KafkaTopicProvisioner>();
                 builder.Services.AddHostedService<KafkaTopicInitializerHostedService>();
                 builder.Services.AddSingleton<IOrderProducer, OrderProducer>();
+
+                var postgresConn = builder.Configuration.GetConnectionString("ordersdb") ??
+                                   builder.Configuration.GetConnectionString("DefaultConnection") ??
+                                   "Host=localhost;Port=5432;Database=ordersdb;Username=postgres;Password=postgres";
+                builder.Services.AddDatabaseMigrations(postgresConn);
+                builder.Services.AddHostedService<DatabaseMigrationHostedService>();
+                builder.Services.AddSingleton<IDbConnectionFactory, NpgsqlConnectionFactory>();
+                builder.Services.AddScoped<IOrderRepository, OrderRepository>();
                 builder.Services.AddSingleton<ISchemaRegistryClient>(sp =>
                 {
                     var config = new SchemaRegistryConfig
