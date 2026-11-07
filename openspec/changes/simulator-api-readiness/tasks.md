@@ -13,5 +13,5 @@
 
 ## 3. Verificação Integrada e Build
 
-- [ ] 3.1 Compilar toda a solução com `TreatWarningsAsErrors=true` e executar suíte de testes existente
-- [ ] 3.2 Validar execução orquestrada via Aspire confirmando que o simulador aguarda a prontidão da API sem erros de recusa de conexão
+- [x] 3.1 Compilar toda a solução com `TreatWarningsAsErrors=true` e executar suíte de testes existente
+- [x] 3.2 Validar execução orquestrada via Aspire confirmando que o simulador aguarda a prontidão da API sem erros de recusa de conexão
