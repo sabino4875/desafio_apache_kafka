@@ -119,5 +119,25 @@ namespace Kafka.Producer.Api.IntegrationTests
             var problem = await response.Content.ReadFromJsonAsync<JsonElement>(cancellationToken: TestContext.Current.CancellationToken);
             Assert.True(problem.TryGetProperty("errors", out var errorsProp) || problem.TryGetProperty("detail", out _));
         }
+
+        [Fact]
+        public async Task GetHealth_DeveRetornar200Ok()
+        {
+            // Act
+            var response = await this.client.GetAsync(new Uri("/health", UriKind.Relative), TestContext.Current.CancellationToken);
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        }
+
+        [Fact]
+        public async Task GetAlive_DeveRetornar200Ok()
+        {
+            // Act
+            var response = await this.client.GetAsync(new Uri("/alive", UriKind.Relative), TestContext.Current.CancellationToken);
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        }
     }
 }

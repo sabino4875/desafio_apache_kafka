@@ -51,10 +51,7 @@ namespace Kafka.Producer.Console
                 builder.Services.AddHostedService<KafkaTopicInitializerHostedService>();
                 builder.Services.AddSingleton<IOrderProducer, OrderProducer>();
 
-                var postgresConn = builder.Configuration.GetConnectionString("ordersdb") ??
-                                   builder.Configuration.GetConnectionString("DefaultConnection") ??
-                                   "Host=localhost;Port=5432;Database=ordersdb;Username=postgres;Password=postgres";
-                builder.Services.AddDatabaseMigrations(postgresConn);
+                builder.Services.AddDatabaseMigrations();
                 builder.Services.AddHostedService<DatabaseMigrationHostedService>();
                 builder.Services.AddHostedService<OutboxCdcDispatcherWorker>();
                 builder.Services.AddSingleton<IDbConnectionFactory, NpgsqlConnectionFactory>();
@@ -178,6 +175,7 @@ namespace Kafka.Producer.Console
                     app.UseHttpsRedirection();
                 }
 
+                app.MapDefaultEndpoints();
                 app.UseOrderEndPoints();
 
                 app.Run();

@@ -1,4 +1,5 @@
 using Aspire.Hosting;
+using Aspire.Hosting.ApplicationModel;
 using System;
 
 var builder = DistributedApplication.CreateBuilder(args);
@@ -39,8 +40,20 @@ builder.AddContainer("kafka-ui", "provectuslabs/kafka-ui", "latest")
     .WaitFor(kafka)
     .WaitFor(schemaRegistry);
 
+var securePass = new GenerateParameterDefault
+{
+    MinLength = 22,
+    Numeric = true,
+    Special = true,
+    Upper = true,
+    Lower = true
+};
+
+var pgUsername = builder.AddParameter(name: "username", value: "postgres", secret: false);
+var pgPassword = builder.AddParameter(name: "password", value: securePass, secret: true);
+
 // 4. Adiciona o PostgreSQL para persistência e Outbox Pattern com suporte a CDC (wal_level=logical)
-var postgres = builder.AddPostgres("postgres")
+var postgres = builder.AddPostgres("postgres", userName: pgUsername, password: pgPassword)
     .WithImage("postgres", "16-alpine")
     .WithArgs("-c", "wal_level=logical")
     .WithEndpoint(port: 5432, targetPort: 5432, name: "tcp");
