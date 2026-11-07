@@ -17,6 +17,24 @@ namespace Kafka.Producer.Simulator.Infrastructure.Http
     {
         private readonly ApiOptions _options = options.Value;
 
+        public async Task<bool> CheckHealthAsync(CancellationToken ct)
+        {
+            try
+            {
+                using var response = await httpClient.GetAsync(
+                    new Uri("/alive", UriKind.Relative), ct);
+                return response.IsSuccessStatusCode;
+            }
+            catch (OperationCanceledException) when (ct.IsCancellationRequested)
+            {
+                throw;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
         public async Task<(bool Success, string Detail, DomainError Error)> DispatchAsync(
             CreateOrderRequest pedido, CancellationToken ct)
         {

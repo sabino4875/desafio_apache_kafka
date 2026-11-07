@@ -1,11 +1,13 @@
-﻿namespace Kafka.Producer.Simulator.Presentation.Worker
+namespace Kafka.Producer.Simulator.Presentation.Worker
 {
     using Kafka.Producer.Simulator.Application.UseCases;
     using Kafka.Producer.Simulator.Infrastructure.Configuration;
     using Kafka.Producer.Simulator.Infrastructure.Factories;
+    using Kafka.Producer.Simulator.Interfaces.Services;
     using Microsoft.Extensions.Hosting;
     using Microsoft.Extensions.Options;
     using Serilog;
+    using System;
     using System.Globalization;
     using System.Security.Cryptography;
     using System.Threading;
@@ -13,6 +15,7 @@
 
     internal sealed class SimulatorWorker(
     DispatchPedidoUseCase useCase,
+    IPedidoDispatchService dispatchService,
     IOptions<SimulatorOptions> options,
     ILogger logger) : BackgroundService
     {
@@ -20,6 +23,34 @@
 
         protected override async Task ExecuteAsync(CancellationToken ct)
         {
+            logger.Information("Aguardando disponibilidade da API de Pedidos...");
+
+            while (!ct.IsCancellationRequested)
+            {
+                var isHealthy = await dispatchService.CheckHealthAsync(ct);
+                if (isHealthy)
+                {
+                    logger.Information("API de Pedidos disponivel e pronta para receber carga.");
+                    break;
+                }
+
+                logger.Information("API de Pedidos ainda nao disponivel. Nova tentativa em 1 segundo...");
+                try
+                {
+                    await Task.Delay(1000, ct);
+                }
+                catch (OperationCanceledException) when (ct.IsCancellationRequested)
+                {
+                    break;
+                }
+            }
+
+            if (ct.IsCancellationRequested)
+            {
+                logger.Information("Simulador cancelado antes do inicio da carga.");
+                return;
+            }
+
             logger.Information(
                 "Simulador iniciado | Delay aleatório: {Min}ms – {Max}ms",
                 _opts.MinDelayMs, _opts.MaxDelayMs);

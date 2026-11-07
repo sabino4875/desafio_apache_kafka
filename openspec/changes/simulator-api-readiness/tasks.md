@@ -7,9 +7,9 @@
 
 ## 2. Implementação de Prontidão e Sondagem no Simulador
 
-- [ ] 2.1 Adicionar método `CheckHealthAsync(CancellationToken ct)` na interface `IPedidoDispatchService` e em `PedidoDispatchService`
-- [ ] 2.2 Atualizar o `SimulatorWorker.cs` para executar sondagem de prontidão com retentativas antes do loop principal de disparo e verificar logs
-- [ ] 2.3 Garantir que o cancelamento gracioso (`CancellationToken`) encerra a sondagem de saúde sem exceções não tratadas
+- [x] 2.1 Adicionar método `CheckHealthAsync(CancellationToken ct)` na interface `IPedidoDispatchService` e em `PedidoDispatchService`
+- [x] 2.2 Atualizar o `SimulatorWorker.cs` para executar sondagem de prontidão com retentativas antes do loop principal de disparo e verificar logs
+- [x] 2.3 Garantir que o cancelamento gracioso (`CancellationToken`) encerra a sondagem de saúde sem exceções não tratadas
 
 ## 3. Verificação Integrada e Build
 
