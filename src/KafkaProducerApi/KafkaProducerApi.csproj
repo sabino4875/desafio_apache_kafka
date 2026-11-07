@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+<Project Sdk="Microsoft.NET.Sdk.Web">
 
 	<PropertyGroup>
 		<OutputType>Exe</OutputType>
@@ -36,6 +36,7 @@
 	<ItemGroup>
 	  <ProjectReference Include="..\Kafka.ServiceDefaults\Kafka.ServiceDefaults.csproj" />
 	  <ProjectReference Include="..\Kafka.Common\Kafka.Common.csproj" />
+	  <ProjectReference Include="..\Kafka.Database.Migrations\Kafka.Database.Migrations.csproj" />
 	</ItemGroup>
 
 </Project>
