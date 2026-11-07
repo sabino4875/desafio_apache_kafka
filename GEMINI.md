@@ -13,6 +13,15 @@
    - Testes sem falhas.
    - Testes manuais confirmados.
    - Sem vulnerabilidades de segurança.
+5. **Tratamento de Erros e Limite de Tentativas**:
+   - Não insistir em contornos silenciosos ou tentativas sucessivas quando um comando falhar.
+   - O limite máximo é de **duas tentativas** para o mesmo comando ou problema.
+   - Persistindo a falha, **parar imediatamente**, relatar claramente a causa raiz e o erro ocorrido ao usuário, e aguardar orientações antes de prosseguir.
+6. **Gerenciamento de Pacotes e Acesso à Rede**:
+   - Em caso de falha de restore, build por falta de pacotes ou restrição de rede/sandbox (ex.: erro de auditoria `NU1900` ou dependências não encontradas), não tentar vasculhar o ambiente local sem consentimento. Parar, listar os pacotes necessários ao usuário e solicitar a restauração.
+7. **Execução Manual de Comandos e Compilação**:
+   - É terminantemente proibido disparar comandos de build, teste ou execução demorados pelo terminal automático do agente que possam ser movidos para segundo plano.
+   - Toda compilação (`dotnet build`), restauração (`dotnet restore`), execução de testes (`dotnet test`) e comandos git (`git commit`, etc.) devem ser preparados e fornecidos ao usuário para execução manual no terminal do host. O agente deve apenas preparar o código, fornecer os comandos exatos e aguardar o feedback do usuário.
 
 ## Gotchas
 
