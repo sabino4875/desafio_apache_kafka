@@ -1,4 +1,4 @@
-﻿namespace Kafka.Producer.Api.IntegrationTests.Helpers
+namespace Kafka.Producer.Api.IntegrationTests.Helpers
 {
     using Kafka.Producer.Api.Contracts;
     using Microsoft.AspNetCore.Hosting;
@@ -9,11 +9,15 @@
     using System.Net.Http;
     using System.Threading.Tasks;
     using Testcontainers.Kafka;
+    using Testcontainers.PostgreSql;
 
     public class WebIntegrationTestWebApplicationFactory : WebApplicationFactory<IApiMarker>, IAsyncLifetime
     {
         public HttpClient HttpClient { get; private set; } = null!;
+        public string PostgresConnectionString => this.PostgresContainer.GetConnectionString();
+
         private KafkaContainer KafkaContainer { get; } = new KafkaBuilder("confluentinc/cp-kafka:7.6.0").Build();
+        private PostgreSqlContainer PostgresContainer { get; } = new PostgreSqlBuilder("postgres:16-alpine").Build();
 
         protected override void ConfigureWebHost(IWebHostBuilder builder)
         {
@@ -21,22 +25,25 @@
 
             builder.ConfigureAppConfiguration((context, config) =>
             {
-                var bootstrapServers = KafkaContainer.GetBootstrapAddress();
+                var bootstrapServers = this.KafkaContainer.GetBootstrapAddress();
+                var postgresConn = this.PostgresContainer.GetConnectionString();
+
                 config.AddInMemoryCollection(new Dictionary<string, string>
                 {
-                    // Sobrescreve o BootstrapServers da API com o host/porta dinâmica do Testcontainers
                     ["Kafka:ProducerSettings:BootstrapServers"] = bootstrapServers,
-                    ["ConnectionStrings:kafka"] = bootstrapServers
+                    ["ConnectionStrings:kafka"] = bootstrapServers,
+                    ["ConnectionStrings:ordersdb"] = postgresConn,
+                    ["ConnectionStrings:DefaultConnection"] = postgresConn
                 });
             });
         }
 
         public async ValueTask InitializeAsync()
         {
-            // 3. Inicia o container do Kafka no Docker antes de rodar os testes
-            await KafkaContainer.StartAsync();
+            await this.KafkaContainer.StartAsync();
+            await this.PostgresContainer.StartAsync();
 
-            HttpClient = CreateClient(new WebApplicationFactoryClientOptions
+            this.HttpClient = this.CreateClient(new WebApplicationFactoryClientOptions
             {
                 BaseAddress = new Uri("https://localhost", UriKind.Absolute),
             });
@@ -44,10 +51,10 @@
 
         public override async ValueTask DisposeAsync()
         {
-            // 4. Finaliza e descarta o container Docker do Kafka
-            await KafkaContainer.DisposeAsync();
+            await this.KafkaContainer.DisposeAsync();
+            await this.PostgresContainer.DisposeAsync();
 
-            HttpClient?.Dispose();
+            this.HttpClient?.Dispose();
             await base.DisposeAsync();
             GC.SuppressFinalize(this);
         }

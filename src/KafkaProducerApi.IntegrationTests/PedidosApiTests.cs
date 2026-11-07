@@ -1,7 +1,9 @@
 namespace Kafka.Producer.Api.IntegrationTests
 {
     using Kafka.Producer.Api.IntegrationTests.Helpers;
+    using Npgsql;
     using System;
+    using System.Collections.Generic;
     using System.Net;
     using System.Net.Http;
     using System.Net.Http.Json;
@@ -12,63 +14,107 @@ namespace Kafka.Producer.Api.IntegrationTests
     [Collection("Api")]
     public class PedidosApiTests
     {
-        private readonly HttpClient _client;
+        private readonly HttpClient client;
+        private readonly WebIntegrationTestWebApplicationFactory factory;
 
         public PedidosApiTests(WebIntegrationTestWebApplicationFactory factory)
         {
             ArgumentNullException.ThrowIfNull(factory, nameof(factory));
-            _client = factory.HttpClient;
+            this.factory = factory;
+            this.client = factory.HttpClient;
         }
 
         [Fact]
-        public async Task PostPedidos_QuandoPayloadValido_DeveRetornar200Ok()
+        public async Task PostPedidos_QuandoPayloadValido_DeveGravarEmOrdersOrderItemsEOutbox()
         {
-            // Arrange - Objeto anônimo compatível com o contrato esperado
+            // Arrange - Criação de payload válido conforme CreateOrderRequestValidator (OrderId e ClientId com 32 caracteres)
+            var orderId = Guid.NewGuid().ToString("N");
+            var clientId = Guid.NewGuid().ToString("N");
+
             var payload = new
             {
-                clientId = "cli-12345",
+                orderId = orderId,
+                clientId = clientId,
                 total = 250.75m,
-                product = "Notebook Gamer"
+                createdAt = DateTime.UtcNow,
+                items = new List<object>
+                {
+                    new
+                    {
+                        productId = Guid.NewGuid().ToString("N"),
+                        productName = "Notebook Gamer Dell",
+                        quantity = 1,
+                        unitPrice = 200.00m,
+                        itemTotal = 200.00m
+                    },
+                    new
+                    {
+                        productId = Guid.NewGuid().ToString("N"),
+                        productName = "Mouse Sem Fio Logitech",
+                        quantity = 1,
+                        unitPrice = 50.75m,
+                        itemTotal = 50.75m
+                    }
+                }
             };
 
-            // Act - Consome o endpoint via HTTP POST como um cliente real
-            var response = await _client.PostAsJsonAsync("/api/pedidos", payload, cancellationToken: TestContext.Current.CancellationToken);
+            // Act - Envia o pedido para o endpoint da API
+            var response = await this.client.PostAsJsonAsync("/api/pedidos", payload, cancellationToken: TestContext.Current.CancellationToken);
 
-            // Assert - Valida o status retornado
+            // Assert - Valida resposta HTTP 200 OK
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
-            // Assert - Validação da resposta JSON
             var jsonResponse = await response.Content.ReadFromJsonAsync<JsonElement>(cancellationToken: TestContext.Current.CancellationToken);
-            Assert.True(jsonResponse.TryGetProperty("mensagem", out var mensagemProp));
-            Assert.Equal("Pedido publicado no Kafka com sucesso!", mensagemProp.GetString());
-            Assert.True(jsonResponse.TryGetProperty("particao", out _));
-            Assert.True(jsonResponse.TryGetProperty("offset", out _));
+            Assert.True(jsonResponse.TryGetProperty("id", out var idProp));
+            Assert.Equal(orderId, idProp.GetString());
+
+            // Assert no PostgreSQL - Verifica se as 3 tabelas foram populadas via transação ACID
+            await using var conn = new NpgsqlConnection(this.factory.PostgresConnectionString);
+            await conn.OpenAsync(TestContext.Current.CancellationToken);
+
+            // 1. Tabela orders
+            await using (var cmd = new NpgsqlCommand("SELECT COUNT(*) FROM orders WHERE id = @id", conn))
+            {
+                cmd.Parameters.AddWithValue("id", orderId);
+                var count = (long)(await cmd.ExecuteScalarAsync(TestContext.Current.CancellationToken) ?? 0);
+                Assert.Equal(1, count);
+            }
+
+            // 2. Tabela order_items
+            await using (var cmd = new NpgsqlCommand("SELECT COUNT(*) FROM order_items WHERE order_id = @orderId", conn))
+            {
+                cmd.Parameters.AddWithValue("orderId", orderId);
+                var itemsCount = (long)(await cmd.ExecuteScalarAsync(TestContext.Current.CancellationToken) ?? 0);
+                Assert.Equal(2, itemsCount);
+            }
+
+            // 3. Tabela outbox_messages
+            await using (var cmd = new NpgsqlCommand("SELECT COUNT(*) FROM outbox_messages WHERE aggregate_id = @aggId", conn))
+            {
+                cmd.Parameters.AddWithValue("aggId", orderId);
+                var outboxCount = (long)(await cmd.ExecuteScalarAsync(TestContext.Current.CancellationToken) ?? 0);
+                Assert.Equal(1, outboxCount);
+            }
         }
 
-        [Theory]
-        [InlineData("", 100.0, "Teclado Mecanico")] // ClientId vazio
-        [InlineData("ab", 100.0, "Teclado Mecanico")] // ClientId curto (< 3 chars)
-        [InlineData("cliente@invalido!", 100.0, "Teclado Mecanico")] // Caracteres invalidos
-        [InlineData("cli-001", 0.0, "Teclado Mecanico")] // Total <= 0
-        [InlineData("cli-001", -50.0, "Teclado Mecanico")] // Total negativo
-        [InlineData("cli-001", 100.0, "")] // Produto vazio
-        [InlineData("cli-001", 100.0, "a")] // Produto muito curto (< 2 chars)
-        public async Task PostPedidos_QuandoPayloadInvalido_DeveRetornar400BadRequestComProblemDetails(
-            string clientId, decimal total, string product)
+        [Fact]
+        public async Task PostPedidos_QuandoPayloadInvalido_DeveRetornar422UnprocessableEntity()
         {
-            // Arrange
+            // Arrange - Payload com campos inválidos (sem OrderId/ClientId no padrão esperado de 32 caracteres)
             var payload = new
             {
-                clientId = clientId,
-                total = total,
-                product = product
+                orderId = "curto",
+                clientId = "invalido",
+                total = -10.0m,
+                createdAt = DateTime.UtcNow,
+                items = new List<object>()
             };
 
             // Act
-            var response = await _client.PostAsJsonAsync("/api/pedidos", payload, cancellationToken: TestContext.Current.CancellationToken);
+            var response = await this.client.PostAsJsonAsync("/api/pedidos", payload, cancellationToken: TestContext.Current.CancellationToken);
 
             // Assert
-            Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+            Assert.Equal(HttpStatusCode.UnprocessableEntity, response.StatusCode);
 
             var problem = await response.Content.ReadFromJsonAsync<JsonElement>(cancellationToken: TestContext.Current.CancellationToken);
             Assert.True(problem.TryGetProperty("errors", out var errorsProp) || problem.TryGetProperty("detail", out _));
