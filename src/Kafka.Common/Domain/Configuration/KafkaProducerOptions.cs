@@ -15,5 +15,7 @@ namespace Kafka.Common.Domain.Configuration
     public sealed class ProducerSettingsOptions
     {
         public string BootstrapServers { get; set; } = "localhost:9092";
+
+        public bool EnableIdempotence { get; set; } = true;
     }
 }

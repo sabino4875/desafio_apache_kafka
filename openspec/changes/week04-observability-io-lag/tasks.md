@@ -7,8 +7,8 @@
 
 ## 2. Instrumentação de I/O e Distributed Tracing no Produtor
 
-- [ ] 2.1 Atualizar `OrderProducer` em `KafkaProducerApi` para iniciar Activity, injetar o cabeçalho W3C `traceparent` no payload Kafka e registrar métricas de bytes enviados e contagem de mensagens; verificar via teste unitário/integração.
-- [ ] 2.2 Configurar `EnableIdempotence = true` nas opções padrão do produtor Kafka em `KafkaProducerOptions.cs`; verificar compilação sem erros.
+- [x] 2.1 Atualizar `OrderProducer` em `KafkaProducerApi` para iniciar Activity, injetar o cabeçalho W3C `traceparent` no payload Kafka e registrar métricas de bytes enviados e contagem de mensagens; verificar via teste unitário/integração.
+- [x] 2.2 Configurar `EnableIdempotence = true` nas opções padrão do produtor Kafka em `KafkaProducerOptions.cs`; verificar compilação sem erros.
 
 ## 3. Instrumentação de I/O, Consumer Lag e Continuidade de Tracing no Consumidor
 

@@ -1,12 +1,15 @@
-﻿namespace Kafka.Common.InfraStructure.ProducerConsumer
+namespace Kafka.Common.InfraStructure.ProducerConsumer
 {
     using Avro;
     using Confluent.Kafka;
     using Confluent.SchemaRegistry;
     using Confluent.SchemaRegistry.Serdes;
+    using Kafka.Common.Diagnostics;
     using Kafka.Common.Domain.Configuration;
     using Microsoft.Extensions.Options;
     using System;
+    using System.Diagnostics;
+    using System.Text;
     using System.Threading;
     using System.Threading.Tasks;
 
@@ -24,7 +27,8 @@
             var config = new ProducerConfig
             {
                 // User-specific properties that you must set
-                BootstrapServers =options.Value.ProducerSettings.BootstrapServers,
+                BootstrapServers = options.Value.ProducerSettings.BootstrapServers,
+                EnableIdempotence = options.Value.ProducerSettings.EnableIdempotence,
                 AllowAutoCreateTopics = true,
                 //SaslUsername = "<CLUSTER API KEY>",
                 //SaslPassword = "<CLUSTER API SECRET>",
@@ -83,19 +87,47 @@
             var message = new Message<TKey, TEvent>
             {
                 Key = keyEvent,
-                Value = payload
+                Value = payload,
+                Headers = new Headers()
             };
+
+            using var activity = KafkaDiagnostics.ActivitySource.StartActivity(
+                $"kafka.produce {topic}",
+                ActivityKind.Producer);
+
+            if (activity != null)
+            {
+                activity.SetTag("messaging.system", "kafka");
+                activity.SetTag("messaging.destination.name", topic);
+                activity.SetTag("messaging.operation", "publish");
+
+                if (activity.Id != null)
+                {
+                    message.Headers.Add("traceparent", Encoding.UTF8.GetBytes(activity.Id));
+                }
+
+                var traceState = activity.TraceStateString;
+                if (!string.IsNullOrEmpty(traceState))
+                {
+                    message.Headers.Add("tracestate", Encoding.UTF8.GetBytes(traceState));
+                }
+            }
 
             var result = await _topicProducer.ProduceAsync(topic, message, cancellationToken);
 
+            var estimatedBytes = 128L;
+            if (result.Message != null && result.Message.Value != null)
+            {
+                estimatedBytes = System.Text.Json.JsonSerializer.SerializeToUtf8Bytes(result.Message.Value).Length;
+                if (estimatedBytes == 0)
+                {
+                    estimatedBytes = 128;
+                }
+            }
+
+            KafkaDiagnostics.RecordMessageProduced(result.Topic, result.Partition.Value, estimatedBytes);
+
             return OperationResult(result);
-            /*
-             bool success,
-             string topic,
-             int partition,
-             long offset,
-             string message,
-             */
         }
 
         public Task<DeliveryResult<TKey, TEvent>> ProduceAsync(string topic, Message<TKey, TEvent> message)
