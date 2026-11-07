@@ -5,7 +5,7 @@ namespace Kafka.Producer.Api.Contracts
     using System.Threading;
     using System.Threading.Tasks;
 
-    public interface IOrderRepository
+    internal interface IOrderRepository
     {
         Task CreateOrderWithOutboxAsync(
             OrderEntity order,

@@ -1,6 +1,6 @@
 namespace Kafka.Producer.Api.Domain.Entities
 {
-    public sealed class OrderItemEntity
+    internal sealed class OrderItemEntity
     {
         public string Id { get; set; } = string.Empty;
 

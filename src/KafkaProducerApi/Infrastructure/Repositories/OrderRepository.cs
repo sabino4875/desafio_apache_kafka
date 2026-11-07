@@ -9,7 +9,7 @@ namespace Kafka.Producer.Api.Infrastructure.Repositories
     using System.Threading;
     using System.Threading.Tasks;
 
-    public sealed class OrderRepository : IOrderRepository
+    internal sealed class OrderRepository : IOrderRepository
     {
         private readonly IDbConnectionFactory connectionFactory;
 

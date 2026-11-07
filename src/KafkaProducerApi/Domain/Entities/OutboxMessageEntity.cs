@@ -2,7 +2,7 @@ namespace Kafka.Producer.Api.Domain.Entities
 {
     using System;
 
-    public sealed class OutboxMessageEntity
+    internal sealed class OutboxMessageEntity
     {
         public Guid Id { get; set; }
 

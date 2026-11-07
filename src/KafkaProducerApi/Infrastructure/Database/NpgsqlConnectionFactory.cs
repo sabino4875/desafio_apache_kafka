@@ -7,7 +7,7 @@ namespace Kafka.Producer.Api.Infrastructure.Database
     using System.Threading;
     using System.Threading.Tasks;
 
-    public sealed class NpgsqlConnectionFactory : IDbConnectionFactory
+    internal sealed class NpgsqlConnectionFactory : IDbConnectionFactory
     {
         private readonly string connectionString;
 

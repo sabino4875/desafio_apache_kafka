@@ -4,7 +4,7 @@ namespace Kafka.Producer.Api.Infrastructure.Database
     using System.Threading;
     using System.Threading.Tasks;
 
-    public interface IDbConnectionFactory
+    internal interface IDbConnectionFactory
     {
         Task<DbConnection> CreateConnectionAsync(CancellationToken cancellationToken = default);
     }
