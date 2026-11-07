@@ -1,12 +1,15 @@
 namespace Kafka.Consumer.Console.Workers
 {
     using Confluent.Kafka;
+    using Kafka.Common.Diagnostics;
     using Kafka.Common.Domain.Configuration;
     using Kafka.Consumer.Console.Contracts;
     using Microsoft.Extensions.Hosting;
     using Microsoft.Extensions.Options;
     using Serilog;
     using System;
+    using System.Diagnostics;
+    using System.Text;
     using System.Threading;
     using System.Threading.Tasks;
 
@@ -51,11 +54,52 @@ namespace Kafka.Consumer.Console.Workers
                         var consumeResult = _consumer.Consume(stoppingToken);
                         if (consumeResult == null || consumeResult.IsPartitionEOF) continue;
 
+                        ActivityContext parentContext = default;
+                        if (consumeResult.Message != null && consumeResult.Message.Headers != null)
+                        {
+                            if (consumeResult.Message.Headers.TryGetLastBytes("traceparent", out var traceParentBytes))
+                            {
+                                var traceParent = Encoding.UTF8.GetString(traceParentBytes);
+                                string traceState = null;
+                                if (consumeResult.Message.Headers.TryGetLastBytes("tracestate", out var traceStateBytes))
+                                {
+                                    traceState = Encoding.UTF8.GetString(traceStateBytes);
+                                }
+
+                                ActivityContext.TryParse(traceParent, traceState, out parentContext);
+                            }
+                        }
+
+                        using var activity = KafkaDiagnostics.ActivitySource.StartActivity(
+                            $"kafka.consume {consumeResult.Topic}",
+                            ActivityKind.Consumer,
+                            parentContext);
+
+                        if (activity != null)
+                        {
+                            activity.SetTag("messaging.system", "kafka");
+                            activity.SetTag("messaging.destination.name", consumeResult.Topic);
+                            activity.SetTag("messaging.destination.partition.id", consumeResult.Partition.Value);
+                            activity.SetTag("messaging.kafka.message.offset", consumeResult.Offset.Value);
+                        }
+
                         // Despacha o processamento do evento para o handler especializado
                         await _eventHandler.HandleAsync(consumeResult, stoppingToken);
 
                         // Commit manual do Offset garantindo semântica At-Least-Once
                         _consumer.Commit(consumeResult);
+
+                        var estimatedBytes = 128L;
+                        if (consumeResult.Message != null && consumeResult.Message.Value != null)
+                        {
+                            estimatedBytes = System.Text.Json.JsonSerializer.SerializeToUtf8Bytes(consumeResult.Message.Value).Length;
+                            if (estimatedBytes == 0)
+                            {
+                                estimatedBytes = 128;
+                            }
+                        }
+
+                        KafkaDiagnostics.RecordMessageConsumed(consumeResult.Topic, consumeResult.Partition.Value, estimatedBytes);
                     }
                     catch (KafkaException e)
                     {

@@ -12,8 +12,8 @@
 
 ## 3. Instrumentação de I/O, Consumer Lag e Continuidade de Tracing no Consumidor
 
-- [ ] 3.1 Adicionar suporte a `SetStatisticsHandler` em `BaseConsumer` ou `OrderConsumer` com intervalo de estatísticas configurável (`StatisticsIntervalMs = 5000`), realizando parse de partições para alimentar os gauges de `kafka.consumer.lag` e `kafka.consumer.records_lag_max`; verificar via compilação.
-- [ ] 3.2 Atualizar `OrdersConsumerWorker` para extrair os cabeçalhos de contexto W3C e dar continuidade ao Span de rastreamento distribuído, incrementando métricas de bytes e mensagens consumidas; verificar via compilação.
+- [x] 3.1 Adicionar suporte a `SetStatisticsHandler` em `BaseConsumer` ou `OrderConsumer` com intervalo de estatísticas configurável (`StatisticsIntervalMs = 5000`), realizando parse de partições para alimentar os gauges de `kafka.consumer.lag` e `kafka.consumer.records_lag_max`; verificar via compilação.
+- [x] 3.2 Atualizar `OrdersConsumerWorker` para extrair os cabeçalhos de contexto W3C e dar continuidade ao Span de rastreamento distribuído, incrementando métricas de bytes e mensagens consumidas; verificar via compilação.
 
 ## 4. Integração, Verificação e Testes
 
