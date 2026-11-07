@@ -1,8 +1,9 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-	  <PackageId>Kafka.Database.Migrations</PackageId>
-	  <RootNamespace>Kafka.Database.Migrations</RootNamespace>
+    <PackageId>Kafka.Database.Migrations</PackageId>
+    <RootNamespace>Kafka.Database.Migrations</RootNamespace>
+    <NoWarn>$(NoWarn);MSB3270</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
