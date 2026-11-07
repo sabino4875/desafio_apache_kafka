@@ -11,6 +11,7 @@ namespace Kafka.Producer.Console
     using Kafka.Producer.Api.EndPoints;
     using Kafka.Database.Migrations;
     using Kafka.Producer.Api.Infrastructure.Admin;
+    using Kafka.Producer.Api.Infrastructure.BackgroundServices;
     using Kafka.Producer.Api.Infrastructure.Database;
     using Kafka.Producer.Api.Infrastructure.Producers;
     using Kafka.Producer.Api.Infrastructure.Repositories;
@@ -55,6 +56,7 @@ namespace Kafka.Producer.Console
                                    "Host=localhost;Port=5432;Database=ordersdb;Username=postgres;Password=postgres";
                 builder.Services.AddDatabaseMigrations(postgresConn);
                 builder.Services.AddHostedService<DatabaseMigrationHostedService>();
+                builder.Services.AddHostedService<OutboxCdcDispatcherWorker>();
                 builder.Services.AddSingleton<IDbConnectionFactory, NpgsqlConnectionFactory>();
                 builder.Services.AddScoped<IOrderRepository, OrderRepository>();
                 builder.Services.AddSingleton<ISchemaRegistryClient>(sp =>
