@@ -9,6 +9,11 @@
 		<NoWarn>$(NoWarn);CA1031;CA1812;CA1852;</NoWarn>
 	</PropertyGroup>
 
+	<PropertyGroup>
+		<ResolveAssemblyWarnOrErrorOnTargetArchitectureMismatch>None</ResolveAssemblyWarnOrErrorOnTargetArchitectureMismatch>
+	</PropertyGroup>
+
+
 	<ItemGroup>
 	  <Content Remove="config.json" />
 	</ItemGroup>
